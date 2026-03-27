@@ -47,16 +47,6 @@ const subscriptionSchema = new mongoose.Schema(
         validator: (value) => value <= new Date(),
         message: "Start Date cannot be in the future",
       },
-      endDate: {
-        type: Date,
-        required: [true, "Subscription End Date is required"],
-        validate: {
-          validator: function (value) {
-            return value > this.startDate;
-          },
-          message: "End Date cannot be before Start Date",
-        },
-      },
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -67,25 +57,6 @@ const subscriptionSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
-subscriptionSchema.pre("save", function (next) {
-  if (!this.renewalDate) {
-    const renewalPeriods = {
-      daily: 1,
-      weekly: 7,
-      monthly: 30,
-      yearly: 365,
-    };
-    this.renewalDate = new Date(this.startDate);
-    this.renewalDate.setDate(
-      this.renewalDate.getDate() + renewalPeriods[this.frequency],
-    );
-  }
-  if (this.renewalDate < new Date()) {
-    this.status = "expired";
-  }
-  next();
-});
 
 const Subscription = mongoose.model("Subscription", subscriptionSchema);
 export default Subscription;
